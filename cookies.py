@@ -1,6 +1,7 @@
 from flask import (Flask, request, render_template,
                     make_response, after_this_request,
                     redirect, url_for)
+from webbrowser import open as webopen
 
 # Setup Flask
 web = Flask(__name__)
@@ -13,7 +14,7 @@ def index():
     except KeyError:
         # Otherwise go to the login page
         resp = redirect('/login')
-    
+    resp = render_template('playlist.html')
     return resp
 
 @web.route('/login', methods=['GET', 'POST'])
@@ -29,13 +30,11 @@ def login():
         return resp
     else:
         # If GETing show a login form
-        ret = '''
-        <form method="post">
-            <p><input type=text name=user>
-            <p><input type=submit value=Enter>
-        </form>
-        '''
+        ret = render_template('login.html')
     return ret
 
 if __name__ == '__main__':
-    web.run(debug=False, host='0.0.0.0', port=5000)
+    port = 5000
+    webopen('localhost:'+str(port), 2)
+    web.run(debug=True, host='0.0.0.0', port=port)
+    

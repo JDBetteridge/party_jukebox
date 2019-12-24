@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../static/css/w3.css">
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    <title>Playlist</title>
+</head>
+<body>
+<!-- Heading Bar -->
+<div class="w3-bar w3-blue">
+    <h3 class="w3-bar-item">Now playing:</h3>
+    <div class="w3-hide-medium w3-hide-large">
+    <button class="w3-bar-item w3-button w3-xxlarge w3-right w3-red">
+        <i class="fa fa-step-forward"></i>?</button>
+    <button class="w3-bar-item w3-button w3-xxlarge w3-right w3-green">
+        <i class="fa fa-plus"></i>?</button>
+    </div>
+</div>
+
+<!-- Playing info -->
+<div class="w3-row">
+    <div class="w3-col s4 m2 l2 w3-padding">
+        <img src="../static/images/album.png" style="width:200px" class="w3-left w3-image"></img>
+    </div>
+    <div class="w3-col s6 m8 l8">
+        <h3>Track</h3>
+        <h4>Artist</h4>
+        <h4>Album</h4>
+    </div>
+    <div class="w3-col w3-hide-small m2 l2">
+        <p>
+            <button style="width:100px" class="w3-button w3-round-xlarge w3-green w3-xxlarge">
+                <i class="fa fa-plus"></i>
+                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></button>
+        </p>
+        <p>
+            <button style="width:100px" class="w3-button w3-round-xlarge w3-red w3-xxlarge">
+                <i class="fa fa-step-forward"></i>
+                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></button><br/>
+        </p>
+    </div>
+</div>
+
+<!-- Middle Bar -->
+<div class="w3-bar w3-blue">
+    <div class="w3-bar-item">Queue</div>
+</div>
+
+<!-- Queue -->
+<div class="w3-cell-row w3-mobile">
+    <ul class="w3-ul w3-col s12 m6 l6 w3-border">
+        <li style="height:90px" class="w3-row">
+            <div class="w3-col s1 m1 l1">1. </div>
+            <div class="w3-col s2 m2 l2"><img src="../static/images/album.png" style="width:50px" class="w3-center w3-image"></img></div>
+            <div class="w3-col s7 m6 l6">
+                <span class="w3-large">Track</span><br/>
+                Artist<br/>
+                Picked by: Wiggles
+            </div>
+            <div class="w3-col s2 m3 l3">
+                <button class="w3-button w3-round-xlarge w3-green">
+                <i class="fa fa-thumbs-up"></i>?</button>
+                <button class="w3-button w3-round-xlarge w3-red">
+                <i class="fa fa-thumbs-down"></i>?</button>
+            </div>
+        </li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+    </ul>
+    <ul class="w3-ul w3-col s12 m6 l6 w3-border">
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+    </ul>
+</div>
+
+<!-- Bottom Bar -->
+<div class="w3-bar w3-blue">
+    <div class="w3-bar-item">Logged in as Wiggles</div>
+</div>
+</body>
+</html> 

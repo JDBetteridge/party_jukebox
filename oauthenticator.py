@@ -47,11 +47,16 @@ def callback():
     
 @web.route('/something')
 def something():
-    spot = OAuth2Session(client_id, token=session['oauth_token'])
+    try:
+        spot = OAuth2Session(client_id, token=session['oauth_token'])
+    except KeyError:
+        return redirect('/obtain_token')
     endpoint = 'https://api.spotify.com/v1/me/player/next'
     #spot.post(endpoint)
     ret = spot.get('https://api.spotify.com/v1/search', params={'q':'hello', 'type':'track'})
-    return str(ret.json())
+    import pprint
+    nice = pprint.pformat(str(ret.json()))
+    return ret.json()
 
 # Run when called
 if __name__ == '__main__':
@@ -59,6 +64,6 @@ if __name__ == '__main__':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "1"
 
     web.secret_key = os.urandom(24)
-    web.run(debug=False, host='0.0.0.0', port=6500) #ssl_context='adhoc'
+    web.run(debug=True, host='0.0.0.0', port=6500) #ssl_context='adhoc'
 
 
