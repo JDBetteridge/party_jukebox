@@ -10,11 +10,12 @@ web = Flask(__name__)
 def index():
     # If cookie exists, it gets returned
     try:
-        resp = request.cookies['user']
+        user = request.cookies['user']
+        resp = render_template('hello_world.html', user=user)
     except KeyError:
         # Otherwise go to the login page
         resp = redirect('/login')
-    resp = render_template('playlist.html')
+    
     return resp
 
 @web.route('/login', methods=['GET', 'POST'])
@@ -32,6 +33,10 @@ def login():
         # If GETing show a login form
         ret = render_template('login.html')
     return ret
+
+@web.route('/<page>')
+def fetch(page):
+    return render_template(page+'.html')
 
 if __name__ == '__main__':
     port = 5000
