@@ -13,8 +13,8 @@
     <div class="w3-hide-medium w3-hide-large">
     <button class="w3-bar-item w3-button w3-xxlarge w3-right w3-red">
         <i class="fa fa-step-forward"></i>?</button>
-    <button class="w3-bar-item w3-button w3-xxlarge w3-right w3-green">
-        <i class="fa fa-plus"></i>?</button>
+    <a class="w3-bar-item w3-button w3-xxlarge w3-right w3-green" href="search">
+        <i class="fa fa-plus"></i>?</a>
     </div>
 </div>
 
@@ -27,17 +27,18 @@
         <h3>Track</h3>
         <h4>Artist</h4>
         <h4>Album</h4>
+        <h4>Picked by: Wiggles</h4>
     </div>
     <div class="w3-col w3-hide-small m2 l2">
         <p>
-            <button style="width:100px" class="w3-button w3-round-xlarge w3-green w3-xxlarge">
+            <a style="width:100px" class="w3-button w3-round-xlarge w3-xxlarge w3-green" href="search">
                 <i class="fa fa-plus"></i>
-                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></button>
+                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></a>
         </p>
         <p>
-            <button style="width:100px" class="w3-button w3-round-xlarge w3-red w3-xxlarge">
+            <a style="width:100px" class="w3-button w3-round-xlarge w3-xxlarge w3-red" href="action/skip">
                 <i class="fa fa-step-forward"></i>
-                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></button><br/>
+                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></a><br/>
         </p>
     </div>
 </div>
@@ -59,9 +60,9 @@
                 Picked by: Wiggles
             </div>
             <div class="w3-col s2 m3 l3">
-                <button class="w3-button w3-round-xlarge w3-green">
+                <button class="w3-button w3-round-xlarge w3-right w3-green">
                 <i class="fa fa-thumbs-up"></i>?</button>
-                <button class="w3-button w3-round-xlarge w3-red">
+                <button class="w3-button w3-round-xlarge w3-right w3-red">
                 <i class="fa fa-thumbs-down"></i>?</button>
             </div>
         </li>
@@ -81,7 +82,7 @@
 
 <!-- Bottom Bar -->
 <div class="w3-bar w3-blue">
-    <div class="w3-bar-item">Logged in as Wiggles</div>
+    <div class="w3-bar-item">Logged in as {{ user }}</div>
 </div>
 </body>
 </html> 

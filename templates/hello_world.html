@@ -8,6 +8,11 @@
 <body>
 
     <h1>Hello World!</h1>
-
+    {% if user %}
+    <p>You are {{user}}</p>
+    {% else %}
+    <p>You are unknown</p>
+    {% endif %}
+    
 </body>
 </html> 
