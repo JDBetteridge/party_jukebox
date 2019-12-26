@@ -19,19 +19,19 @@
             </div>
             <div class="w3-bar w3-padding">
                 <label style="width:25%"class="w3-bar-item">
-                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" checked="checked" name="tracks">
+                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" checked="checked" name="track">
                     Tracks
                 </label>
                 <label style="width:25%"class="w3-bar-item">
-                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="artists">
+                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="artist">
                     Artists
                 </label>
                 <label style="width:25%"class="w3-bar-item">
-                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="albums">
+                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="album">
                     Albums
                 </label>
                 <label style="width:25%"class="w3-bar-item">
-                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="playlists">
+                    <input class="w3-bar-item w3-check w3-margin-right" type="checkbox" name="playlist">
                     Playlists
                 </label>
             </div>
@@ -47,6 +47,7 @@
 <!-- Search results -->
 <div class="w3-cell-row w3-mobile">
     <ul class="w3-ul w3-col s12 m12 l12 w3-border">
+        
         <li style="height:90px" class="w3-row" onclick="location.href='/';">
             <div class="w3-col s2 m2 l2"><img src="../static/images/album.png" style="width:50px" class="w3-center w3-image"></img></div>
             <div class="w3-col s8 m9 l9">
@@ -58,11 +59,29 @@
                 <a class="w3-button w3-round-xlarge w3-green w3-right" href="login">
                 <i class="fa fa-plus"></i></a>
             </div>
-        </li><li style="height:90px" class="w3-row"></li>
+        </li>
+        {% for item in results['tracks']['items'] %}
+        <li style="height:90px" class="w3-row" onclick="location.href='/';">
+            <div class="w3-col s2 m2 l2"><img src="{{ item['album']['images'][2]['url'] }}" style="width:50px" class="w3-center w3-image"></img></div>
+            <div class="w3-col s8 m9 l9">
+                <span class="w3-large">{{ item['name'] }}</span><br/>
+                {{ item['artists'][0]['name'] }}<br/>
+                {{ item['album']['name'] }}
+            </div>
+            <div class="w3-col s2 m1 l1">
+                <a class="w3-button w3-round-xlarge w3-green w3-right" href="queue/{{ user }}/{{ item['id'] }}">
+                <i class="fa fa-plus"></i></a>
+            </div>
+        </li>
+        {% endfor %}
+        <li style="height:90px" class="w3-row"><a href="">more...</a></li>
+<!--
         <li style="height:90px" class="w3-row"></li>
         <li style="height:90px" class="w3-row"></li>
         <li style="height:90px" class="w3-row"></li>
         <li style="height:90px" class="w3-row"></li>
+        <li style="height:90px" class="w3-row"></li>
+-->
     </ul>
 </div>
 
