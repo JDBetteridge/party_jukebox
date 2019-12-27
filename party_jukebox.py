@@ -1,5 +1,6 @@
 import os
 
+import jukebox_queue as jq
 import spotify_api as sa
 
 from flask import (Flask, request, render_template,
@@ -19,7 +20,14 @@ AUTH = None
 secret_user = str(sample(range(1000,10000), 1)[0])
 # Setup auth
 client = sa.spotify_auth.Client(CID, CSEC)
-obj = sa.spotify_auth.auth(jukebox, client)
+obj = sa.spotify_auth.auth( jukebox,
+                            client,
+                            scope=[ 'user-read-private',
+                                    'user-modify-playback-state',
+                                    'user-read-currently-playing'])
+
+# Setup global queue
+QUEUE = jq.Queue()
 
 @jukebox.route('/')
 def index():
@@ -33,7 +41,9 @@ def index():
         try:
             user = request.cookies['user']
             session['user'] = user
-            resp = render_template('playlist.html', user=user)
+            spot = OAuth2Session(CID, token=AUTH)
+            queue = [sa.get_current(spot)] + QUEUE
+            resp = render_template('playlist.html', user=user, queue=queue)
         except KeyError:
             # Otherwise go to the login page
             resp = redirect('/login')
@@ -106,11 +116,25 @@ def action(x, dest='/'):
     
 @jukebox.route('/queue/<user>/<sid>')
 def queue(user, sid):
+    global AUTH, CID, QUEUE
+    try:
+        spot = OAuth2Session(CID, token=AUTH)
+    except KeyError:
+        return redirect('/obtain_token')
     print(user, ':', sid)
+    json = sa.get_track(spot, sid)
+    QUEUE.add(user, json)
     return redirect('/')
 
-@jukebox.route('/vote/<user>/<idx>/<updown>')
+@jukebox.route('/vote/<user>/<int:idx>/<updown>')
 def vote(user, idx, updown):
+    global QUEUE
+    if updown == '+':
+        QUEUE[idx].upvote(user)
+    elif updown == '-':
+        QUEUE[idx].downvote(user)
+    else:
+        pass
     print(user, ':', idx, ':', updown)
     return redirect('/')
 

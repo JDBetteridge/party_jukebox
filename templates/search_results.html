@@ -47,7 +47,7 @@
 <!-- Search results -->
 <div class="w3-cell-row w3-mobile">
     <ul class="w3-ul w3-col s12 m12 l12 w3-border">
-        
+<!--
         <li style="height:90px" class="w3-row" onclick="location.href='/';">
             <div class="w3-col s2 m2 l2"><img src="../static/images/album.png" style="width:50px" class="w3-center w3-image"></img></div>
             <div class="w3-col s8 m9 l9">
@@ -60,6 +60,7 @@
                 <i class="fa fa-plus"></i></a>
             </div>
         </li>
+-->
         {% for item in results['tracks']['items'] %}
         <li style="height:90px" class="w3-row" onclick="location.href='/';">
             <div class="w3-col s2 m2 l2"><img src="{{ item['album']['images'][2]['url'] }}" style="width:50px" class="w3-center w3-image"></img></div>
@@ -75,13 +76,6 @@
         </li>
         {% endfor %}
         <li style="height:90px" class="w3-row"><a href="">more...</a></li>
-<!--
-        <li style="height:90px" class="w3-row"></li>
-        <li style="height:90px" class="w3-row"></li>
-        <li style="height:90px" class="w3-row"></li>
-        <li style="height:90px" class="w3-row"></li>
-        <li style="height:90px" class="w3-row"></li>
--->
     </ul>
 </div>
 

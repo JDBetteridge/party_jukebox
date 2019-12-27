@@ -21,7 +21,7 @@ class Client(object):
         self.id = client_id
         self.secret = client_secret
 
-def auth(webapp, client, scope=['user-read-private', 'user-modify-playback-state']):
+def auth(webapp, client, scope=['user-read-private']):
     
     @webapp.route('/obtain_token')
     def stage_1():
