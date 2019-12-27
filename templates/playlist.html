@@ -12,39 +12,41 @@
 <div class="w3-bar w3-blue">
     <h3 class="w3-bar-item">Now playing:</h3>
     <div class="w3-hide-medium w3-hide-large">
-    <a class="w3-bar-item w3-button w3-xxlarge w3-right w3-red" href="vote/{{ user }}/0/-">
-        <i class="fa fa-step-forward"></i>?</a>
-    <a class="w3-bar-item w3-button w3-xxlarge w3-right w3-green" href="search">
-        <i class="fa fa-plus"></i>?</a>
+    <a class="w3-bar-item w3-button w3-xxlarge w3-right w3-red w3-text-black" href="vote/{{ user }}/0/-">
+        <i class="fa fa-step-forward w3-text-white"></i>
+        <span class="w3-badge w3-large w3-right">{{ queue[0].downvotes|length }}</span></a>
+    <a class="w3-bar-item w3-button w3-xxlarge w3-right w3-green w3-text-black" href="search">
+        <i class="fa fa-plus w3-text-white"></i>
+        <span class="w3-badge w3-large w3-right">{{ queue|length-1 }}</span></a>
     </div>
 </div>
 
 <!-- Playing info -->
 <div class="w3-row">
     <div class="w3-col s4 m2 l2 w3-padding">
-        <img src="{{ queue[0]['item']['album']['images'][1]['url'] }}" style="width:200px" class="w3-left w3-image"></img>
+        <img src="{{ queue[0].art_m }}" style="width:200px" class="w3-left w3-image"></img>
     </div>
     <div class="w3-col s6 m8 l8">
-        <h3>{{ queue[0]['item']['name'] }}</h3>
-        <h4>{{ queue[0]['item']['artists'][0]['name'] }}</h4>
-        <h4>{{ queue[0]['item']['album']['name'] }}</h4>
+        <h3>{{ queue[0].track }}</h3>
+        <h4>{{ queue[0].artists }}</h4>
+        <h4>{{ queue[0].album }}</h4>
         <div class="w3-light-grey w3-round-xlarge" style="width:90%">
-            <div class="w3-bar w3-blue w3-round-xlarge" style="width:{{ 100*queue[0]['progress_ms']/queue[0]['item']['duration_ms'] }}%">
+            <div class="w3-bar w3-blue w3-round-xlarge" style="width:{{ 100*progress|default(0)/queue[0].duration }}%">
                 <i class="fa fa-unsorted w3-right"></i>
             </div>
         </div>
-        <h4>Picked by: {{ user }}</h4>
+        <h4>Picked by: {{ queue[0].user }}</h4>
     </div>
     <div class="w3-col w3-hide-small m2 l2">
         <p>
             <a style="width:100px" class="w3-button w3-round-xlarge w3-xxlarge w3-green" href="search">
                 <i class="fa fa-plus"></i>
-                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></a>
+                <span class="w3-badge w3-large w3-right w3-hide-small">{{ queue|length-1 }}</span></a>
         </p>
         <p>
             <a style="width:100px" class="w3-button w3-round-xlarge w3-xxlarge w3-red" href="vote/{{ user }}/0/-">
                 <i class="fa fa-step-forward"></i>
-                <span class="w3-badge w3-large w3-right w3-hide-small">?</span></a><br/>
+                <span class="w3-badge w3-large w3-right w3-hide-small">{{ queue[0].downvotes|length }}</span></a><br/>
         </p>
     </div>
 </div>
@@ -67,18 +69,19 @@
                 Picked by: {{ entry.user }}
             </div>
             <div class="w3-col s2 m3 l3">
-                <a class="w3-button w3-round-xlarge w3-right w3-red" href="vote/{{ user }}/{{ loop.index0 }}/-">
+                <a class="w3-button w3-round-xlarge w3-right w3-red" href="vote/{{ user }}/{{ loop.index }}/-">
                 <i class="fa fa-thumbs-down"></i>{{ entry.downvotes|length }}</a>
-                <a class="w3-button w3-round-xlarge w3-right w3-green" href="vote/{{ user }}/{{ loop.index0 }}/+">
+                <a class="w3-button w3-round-xlarge w3-right w3-green" href="vote/{{ user }}/{{ loop.index }}/+">
                 <i class="fa fa-thumbs-up"></i>{{ entry.upvotes|length }}</a>
             </div>
         </li>
         {% endfor %}
     </ul>
     <ul class="w3-ul w3-col s12 m6 l6 w3-border">
+        {% set offset=5 %}
         {% for entry in queue[6:11] %}
         <li style="height:90px" class="w3-row">
-            <div class="w3-col s1 m1 l1">{{ loop.index }}. </div>
+            <div class="w3-col s1 m1 l1">{{ loop.index+offset }}. </div>
             <div class="w3-col s2 m2 l2"><img src="{{ entry.art_s }}" style="width:50px" class="w3-center w3-image"></img></div>
             <div class="w3-col s7 m6 l6">
                 <span class="w3-large">{{ entry.track }}</span><br/>
@@ -86,9 +89,9 @@
                 Picked by: {{ entry.user }}
             </div>
             <div class="w3-col s2 m3 l3">
-                <a class="w3-button w3-round-xlarge w3-right w3-red" href="vote/{{ user }}/{{ loop.index0 }}/-">
+                <a class="w3-button w3-round-xlarge w3-right w3-red" href="vote/{{ user }}/{{ loop.index+offset }}/-">
                 <i class="fa fa-thumbs-down"></i>{{ entry.downvotes|length }}</a>
-                <a class="w3-button w3-round-xlarge w3-right w3-green" href="vote/{{ user }}/{{ loop.index0 }}/+">
+                <a class="w3-button w3-round-xlarge w3-right w3-green" href="vote/{{ user }}/{{ loop.index+offset }}/+">
                 <i class="fa fa-thumbs-up"></i>{{ entry.upvotes|length }}</a>
             </div>
         </li>

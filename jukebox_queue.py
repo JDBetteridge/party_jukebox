@@ -3,6 +3,9 @@
 class Entry(object):
     def __init__(self, user, json):
         self.user = user
+        self.id = json['id']
+        self.uri = json['uri']
+        self.duration = json['duration_ms']
         self.track = json['name']
         self.artists = json['artists'][0]['name']
         self.album = json['album']['name']
@@ -21,6 +24,15 @@ class Entry(object):
         if user in self.upvotes:
             self.upvotes.remove(user)
 
+json = {}
+json['id'] = 'xxxxx'
+json['uri'] = 'spotify:track:xxxxx'
+json['duration_ms'] = 10000
+json['name'] = 'Track'
+json['artists'] = [{'name' : 'Artist'}]
+json['album'] = {'name' : 'Album'}
+json['album']['images'] = [{'url':'../static/images/album.png'}]*3
+default_entry = Entry('Wiggles', json)
 
 class Queue(list):
     def add(self, user, json):

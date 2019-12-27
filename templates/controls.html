@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="5">
+    <link rel="stylesheet" href="../static/css/w3.css">
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    <title>Playlist</title>
+</head>
+<body>
+<!-- Heading Bar -->
+<div class="w3-bar w3-blue">
+    <h3 class="w3-bar-item">Now playing:</h3>
+</div>
+<a href="action/previous/admin_user">Previous</a>
+<a href="action/play/admin_user">Play</a>
+<a href="action/pause/admin_user">Pause</a>
+<a href="action/skip/admin_user">Next</a>
+
+<!-- Playing info -->
+<div class="w3-row">
+    <div class="w3-col s4 m2 l2 w3-padding">
+        <img src="{{ queue[0].art_m }}" style="width:200px" class="w3-left w3-image"></img>
+    </div>
+    <div class="w3-col s6 m8 l8">
+        <h3>{{ queue[0].track }}</h3>
+        <h4>{{ queue[0].artists }}</h4>
+        <h4>{{ queue[0].album }}</h4>
+        <div class="w3-light-grey w3-round-xlarge" style="width:90%">
+            <div class="w3-bar w3-blue w3-round-xlarge" style="width:{{ 100*progress|default(0)/queue[0].duration }}%">
+                <i class="fa fa-unsorted w3-right"></i>
+            </div>
+        </div>
+        <h4>Picked by: {{ queue[0].user }}</h4>
+    </div>
+</div>
+
+</body>
+</html> 

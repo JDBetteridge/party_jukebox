@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 
@@ -16,10 +17,10 @@ def search(spot, string, qtype=['track'], market='from_token', limit=20, offset=
     print(query)
     ret = spot.get(endpoint, params=query)
     
-    with open('json.txt', 'w') as fh:
-        from pprint import pformat
-        pretty = pformat(ret.json())
-        fh.write(pretty)
+    # ~ with open('json.txt', 'w') as fh:
+        # ~ from pprint import pformat
+        # ~ pretty = pformat(ret.json())
+        # ~ fh.write(pretty)
     
     return ret.json()
 
@@ -28,6 +29,47 @@ def search(spot, string, qtype=['track'], market='from_token', limit=20, offset=
 # Artist
 
 # Playlist
+def get_users_playlists(spot, user=None):
+    if user is None:
+        user = get_current_profile(spot)
+        username = user['id']
+    endpoint = 'https://api.spotify.com/v1/users/'
+    endpoint += username + '/playlists'
+    options = {'limit' : 30}
+    ret = spot.get(endpoint, params=options)
+    return ret.json()
+
+def create_playlist(spot, name='auto_playlist'):
+    if name.strip() == '':
+        raise ValueError
+    user = get_current_profile(spot)
+    username = user['id']
+    endpoint = 'https://api.spotify.com/v1/users/'
+    endpoint += username + '/playlists'
+    options = {'name' : name}
+    ret = spot.post(endpoint, data=json.dumps(options))
+    print(ret)
+
+def get_playlist_tracks(spot, pid=None, href=None, limit=100, offset=0):
+    if href is None:
+        endpoint = 'https://api.spotify.com/v1/playlists/'
+        endpoint += pid + '/tracks'
+        options = {'limit' : limit, 'offset' : offset}
+    else:
+        endpoint = href
+        options = {}
+    ret = spot.get(endpoint, params=options)
+    return ret.json()
+
+def add_playlist_tracks(spot, pid=None, href=None, uris=[]):
+    if href is None:
+        endpoint = 'https://api.spotify.com/v1/playlists/'
+        endpoint += pid + '/tracks'
+        options = {'limit' : limit, 'offset' : offset}
+    else:
+        endpoint = href
+        options = {'uris' : uris}
+    spot.post(endpoint, data=json.dumps(options))
 
 # Track
 def get_track(spot, sid):
@@ -36,13 +78,20 @@ def get_track(spot, sid):
     return ret.json()
 
 # Player
-def play(spot):
+def play(spot, context_uri=None, uris=[]):
     endpoint = 'https://api.spotify.com/v1/me/player/play'
-    spot.post(endpoint)
+    if (context_uri is None) and (len(uris) == 0):
+        spot.put(endpoint)
+    elif len(uris) > 0:
+        options = {'uris' : uris}
+        spot.put(endpoint, data=json.dumps(options))
+    elif context_uri is not None:
+        options = {'context_uri' : context_uri}
+        spot.put(endpoint, data=json.dumps(options))
     
 def pause(spot):
     endpoint = 'https://api.spotify.com/v1/me/player/pause'
-    spot.post(endpoint)
+    spot.put(endpoint)
     
 def skip(spot):
     endpoint = 'https://api.spotify.com/v1/me/player/next'
@@ -64,4 +113,8 @@ def status(spot, market='from_token'):
     ret = spot.get(endpoint, params=options)
     return ret.json()
 
-
+# Profile
+def get_current_profile(spot):
+    endpoint = 'https://api.spotify.com/v1/me/'
+    ret = spot.get(endpoint)
+    return ret.json()
