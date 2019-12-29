@@ -19,10 +19,28 @@ class Entry(object):
         if user in self.downvotes:
             self.downvotes.remove(user)
     
+    @property
+    def ups(self):
+        return len(self.upvotes)
+    
     def downvote(self, user):
         self.downvotes.add(user)
         if user in self.upvotes:
             self.upvotes.remove(user)
+    
+    @property
+    def downs(self):
+        return len(self.downvotes)
+    
+    def __lt__(self, other):
+        ''' Less than operator
+        Used for sorting
+        '''
+        if not isinstance(other, type(self)):
+            ret = NotImplemented
+        else:
+            ret = (self.ups, -self.downs) > (other.ups, -other.downs)
+        return ret
 
 json = {}
 json['id'] = 'xxxxx'
@@ -37,4 +55,15 @@ default_entry = Entry('Wiggles', json)
 class Queue(list):
     def add(self, user, json):
         self.append(Entry(user, json))
+        
+    def sort(self, key=None, reverse=False):
+        if self.__len__() < 2:
+            pass
+        else:
+            # playing = self.__getitem__(0)
+            npslice = slice(1, None)
+            queue = self.__getitem__(npslice)
+            queue.sort()
+            self.__setitem__(npslice, queue)
+            
         

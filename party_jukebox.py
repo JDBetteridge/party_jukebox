@@ -54,7 +54,7 @@ def index():
                                         queue=queue,
                                         progress=current['progress_ms'])
             except:
-                queue = [jq.default_entry] + QUEUE
+                queue = jq.Queue([jq.default_entry]) + QUEUE
                 resp = render_template('playlist.html', user=user, queue=queue)
             
         except KeyError:
@@ -111,6 +111,7 @@ def select_playlist():
 
 @jukebox.route('/load_playlist/<pid>')
 def load_playlist(pid):
+    global PLAY_THREAD
     spot = OAuth2Session(CID, token=AUTH)
     json = sa.get_playlist_tracks(spot, pid)
     rand_id = choices(range(json['total']), k=11)
@@ -119,10 +120,11 @@ def load_playlist(pid):
         track = sa.get_track(spot, sid)
         QUEUE.add('Auto', track)
     
-    sa.play(spot, uris=[QUEUE[0].uri])
-    time_sec = QUEUE[0].duration/1000
-    PLAY_THREAD = Timer(time_sec, play_next)
-    PLAY_THREAD.start()
+    if PLAY_THREAD is None:
+        sa.play(spot, uris=[QUEUE[0].uri])
+        time_sec = QUEUE[0].duration/1000
+        PLAY_THREAD = Timer(time_sec, play_next)
+        PLAY_THREAD.start()
     return redirect('/')
 
 def play_next():
@@ -199,6 +201,7 @@ def queue(user, sid):
     print(user, ':', sid)
     json = sa.get_track(spot, sid)
     QUEUE.add(user, json)
+    QUEUE.sort()
     return redirect('/')
 
 @jukebox.route('/vote/<user>/<int:idx>/<updown>')
@@ -206,11 +209,13 @@ def vote(user, idx, updown):
     global QUEUE
     if updown == '+':
         QUEUE[idx].upvote(user)
+        QUEUE.sort()
     elif updown == '-':
         QUEUE[idx].downvote(user)
+        QUEUE.sort()
     else:
         pass
-    print(user, ':', idx, ':', updown)
+    # print(user, ':', idx, ':', updown)
     return redirect('/')
 
 # Run party jukebox
