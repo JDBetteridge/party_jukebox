@@ -137,7 +137,12 @@ def play_next():
 
 @jukebox.route('/'+secret_user)
 def admin_user():
-    return render_template('controls.html', user=session['user'], queue=QUEUE)
+    spot = OAuth2Session(CID, token=AUTH)
+    current = sa.get_current(spot)
+    return render_template('controls.html',
+                            user=session['user'],
+                            queue=QUEUE,
+                            progress=current['progress_ms'])
 
 @jukebox.route('/info')
 def info():
@@ -156,19 +161,41 @@ def search():
     '''
     global AUTH, CID
     if request.method == 'POST':
-        try:
-            spot = OAuth2Session(CID, token=AUTH)
-        except KeyError:
-            return redirect('/obtain_token')
+        spot = OAuth2Session(CID, token=AUTH)
         string = request.form['string']
         qtype = []
         for key in ['track', 'artist', 'album', 'playlist']:
             if request.form.get(key, '') == 'on':
                 qtype.append(key)
-        results = sa.search(spot, string, qtype)
-        resp = render_template('search_results.html', user=session['user'], results=results)
+        
+        try:
+            results = sa.search(spot, string, qtype)
+        except KeyError:
+            return redirect('/obtain_token')
+        
+        qtype = [item+'s' for item in qtype]
+        resp = render_template( 'search_results.html',
+                                user=session['user'],
+                                qtype=qtype,
+                                results=results)
     else:
         resp = render_template('search.html', user=session['user'])
+    return resp
+
+@jukebox.route('/search/<qtype>/<iid>')
+def search_more(qtype, iid):
+    spot = OAuth2Session(CID, token=AUTH)
+    if qtype == 'artists':
+        results = sa.get_artist_top_tracks(spot, aid=iid)
+        #return results
+    elif qtype == 'albums':
+        results = sa.get_album_tracks(spot, aid=iid)
+    elif qtype == 'playlists':
+        results = sa.get_playlist_tracks(spot, pid=iid)
+    resp = render_template( 'search_results_more.html',
+                                user=session['user'],
+                                qtype=[qtype],
+                                results=results)
     return resp
 
 @jukebox.route('/test_play/<uri>')
@@ -182,13 +209,32 @@ def tplay(sid):
 @jukebox.route('/action/<x>', defaults={'dest' : 'index'})
 @jukebox.route('/action/<x>/<dest>')
 def action(x, dest='index'):
-    global AUTH, CID
+    global AUTH, CID, PLAY_THREAD
     try:
         spot = OAuth2Session(CID, token=AUTH)
     except KeyError:
         return redirect('/obtain_token')
+    
+    if x in ['pause', 'skip', 'previous']:
+        PLAY_THREAD.cancel()
+    
     call = getattr(sa, x)
     call(spot)
+    
+    if x == 'play':
+        sa.play(spot)
+        current = sa.get_current(spot)['progress_ms']
+        time_sec = (QUEUE[0].duration - current)/1000
+        PLAY_THREAD = Timer(time_sec, play_next)
+        PLAY_THREAD.start()
+    elif x == 'previous':
+        sa.play(spot, uris=[QUEUE[0].uri])
+        time_sec = QUEUE[0].duration/1000
+        PLAY_THREAD = Timer(time_sec, play_next)
+        PLAY_THREAD.start()
+    elif x == 'skip':
+        play_next()
+    
     return redirect(url_for(dest))
     
 @jukebox.route('/queue/<user>/<sid>')

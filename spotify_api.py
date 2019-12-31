@@ -25,8 +25,24 @@ def search(spot, string, qtype=['track'], market='from_token', limit=20, offset=
     return ret.json()
 
 # Album
+def get_album_tracks(spot, aid=None, href=None, limit=50, offset=0):
+    if href is None:
+        endpoint = 'https://api.spotify.com/v1/albums/'
+        endpoint += aid + '/tracks'
+        options = {'limit' : limit, 'offset' : offset}
+    else:
+        endpoint = href
+        options = {}
+    ret = spot.get(endpoint, params=options)
+    return ret.json()
 
 # Artist
+def get_artist_top_tracks(spot, aid=None, market='from_token'):
+    endpoint = 'https://api.spotify.com/v1/artists/'
+    endpoint += aid + '/top-tracks'
+    options = {'market' : market}
+    ret = spot.get(endpoint, params=options)
+    return ret.json()
 
 # Playlist
 def get_users_playlists(spot, user=None):

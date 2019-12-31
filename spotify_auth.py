@@ -51,6 +51,18 @@ def auth(webapp, client, scope=['user-read-private']):
         session['oauth_token'] = token
         
         return redirect('/login/1')
+        
+    @webapp.route('/update_token')
+    def update_token():
+        extra = {'client_id' : client.id, 'client_secret' : client.secret}
+        saver = lambda tok : session.update({'oauth_token' : tok})
+        spot = OAuth2Session(   client.id,
+                                token=session['oauth_token'],
+                                auto_refresh_url=spotify_token,
+                                auto_refresh_kwargs=extra,
+                                token_updater=saver)
+        spot.refresh_token(spotify_token)
+        return redirect('/')
     
     @webapp.route('/something')
     def something():
