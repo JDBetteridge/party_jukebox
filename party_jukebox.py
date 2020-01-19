@@ -153,10 +153,11 @@ def random_selection():
 def play_next():
     global SPOT, PLAY_THREAD
     QUEUE.pop(0)
-    while skip_criterion(QUEUE[0]):
-        QUEUE.pop(0)
-        if len(QUEUE) == 0:
-            break
+    if len(QUEUE) > 0:
+        while skip_criterion(QUEUE[0]):
+            QUEUE.pop(0)
+            if len(QUEUE) == 0:
+                break
     
     if len(QUEUE) == 0:
         random_selection()
