@@ -80,7 +80,10 @@ def login(admin):
     global SPOT
     if request.method == 'POST':
         username = request.form['user']
-        if admin:
+        if username.strip() == '':
+            mesg = 'Try entering a username with printing characters'
+            resp = make_response(render_template('login.html', info=mesg))
+        elif admin:
             resp = make_response(redirect('/select_playlist'))
         else:
             resp = make_response(redirect('/'))
@@ -109,8 +112,11 @@ def select_playlist():
     global SPOT
     if request.method == 'POST':
         string = request.form['string']
-        sa.create_playlist(SPOT, name=string)
-        resp = redirect('/search')
+        if string.strip() == '':
+            resp = redirect('/select_playlist')
+        else:
+            sa.create_playlist(SPOT, name=string)
+            resp = redirect('/search')
     else:
         json = sa.get_users_playlists(SPOT)
         resp = render_template('select_playlist.html', playlists=json)
@@ -192,6 +198,8 @@ def search():
         for key in ['track', 'artist', 'album', 'playlist']:
             if request.form.get(key, '') == 'on':
                 qtype.append(key)
+        if string.strip() == '':
+            qtype = []
         
         results = sa.search(SPOT, string, qtype)
         qtype = [item+'s' for item in qtype]

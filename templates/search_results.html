@@ -10,7 +10,7 @@
 <!-- Search Bar -->
 <div class="w3-cell-row w3-mobile">
     <div class="w3-cell w3-mobile">
-        <form method="post" class="w3-padding">
+        <form action="/search" method="post" class="w3-padding">
             <div class="w3-bar w3-padding w3-text-blue">
                 <input style="width:80%" class="w3-bar-item w3-input w3-border w3-round" type="text" placeholder="Search" name="string">
                 <button style="width:20%" class="w3-bar-item w3-button w3-blue w3-border w3-round w3-right" type="submit" value="Enter">
@@ -47,20 +47,6 @@
 <!-- Search results -->
 <div class="w3-cell-row w3-mobile">
     <ul class="w3-ul w3-col s12 m12 l12 w3-border">
-<!--
-        <li style="height:90px" class="w3-row" onclick="location.href='/';">
-            <div class="w3-col s2 m2 l2"><img src="../static/images/album.png" style="width:50px" class="w3-center w3-image"></img></div>
-            <div class="w3-col s8 m9 l9">
-                <span class="w3-large">Track</span><br/>
-                Artist<br/>
-                Picked by: Wiggles
-            </div>
-            <div class="w3-col s2 m1 l1">
-                <a class="w3-button w3-round-xlarge w3-green w3-right" href="login">
-                <i class="fa fa-plus"></i></a>
-            </div>
-        </li>
--->
         {% for t in qtype %}
         {% for item in results[t]['items'] %}
         {% if t == 'tracks' %}
@@ -100,6 +86,7 @@
         </li>
         {% endif %}
         {% endfor %}
+        {% if results[t]['next'] is not none %}
         <li style="height:90px" class="w3-row">
             <div class="w3-col s2 m2 l2"><br/></div>
             <div class="w3-col s8 m9 l9">
@@ -110,6 +97,7 @@
                 </form>
             </div>
         </li>
+        {% endif %}
         {% endfor %}
     </ul>
 </div>

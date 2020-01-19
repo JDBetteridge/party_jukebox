@@ -14,7 +14,7 @@ def search(spot, string, qtype=['track'], market='from_token', limit=20, offset=
     query['limit'] = str(limit)
     query['offset'] = str(offset)
     
-    print(query)
+    #print(query)
     ret = spot.get(endpoint, params=query)
     
     # ~ with open('json.txt', 'w') as fh:
