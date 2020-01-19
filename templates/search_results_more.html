@@ -84,6 +84,18 @@
             </div>
         </li>
         {% endfor %}
+<!--
+        <li style="height:90px" class="w3-row">
+            <div class="w3-col s2 m2 l2"><br/></div>
+            <div class="w3-col s8 m9 l9">
+                <form action="/more" method="post">
+                    <input type="hidden" name="qtype" value={{ t }} />
+                    <input type="hidden" name="url" value={{ results[t]['next'] }} />
+                    <button class="w3-bar-item w3-button w3-blue w3-border w3-round" type="submit">more {{ t }}...</button>
+                </form>
+            </div>
+        </li>
+-->
         {% else %}
         {% for item in results['items'] %}
         {% if t == 'tracks' %}
@@ -143,6 +155,18 @@
         </li>
         {% endif %}
         {% endfor %}
+<!--
+        <li style="height:90px" class="w3-row">
+            <div class="w3-col s2 m2 l2"><br/></div>
+            <div class="w3-col s8 m9 l9">
+                <form action="/more" method="post">
+                    <input type="hidden" name="qtype" value={{ t }} />
+                    <input type="hidden" name="url" value={{ results[t]['next'] }} />
+                    <button class="w3-bar-item w3-button w3-blue w3-border w3-round" type="submit">more {{ t }}...</button>
+                </form>
+            </div>
+        </li>
+-->
         {% endif %}
         {% endfor %}
         <li style="height:90px" class="w3-row"><a href="">more...</a></li>

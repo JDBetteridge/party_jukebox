@@ -32,6 +32,7 @@ obj = sa.spotify_auth.auth( jukebox,
 # Setup global queue
 QUEUE = jq.Queue()
 PLAY_THREAD = None
+PLAYLIST = None
 
 @jukebox.route('/')
 def index():
@@ -118,8 +119,9 @@ def select_playlist():
 
 @jukebox.route('/load_playlist/<pid>')
 def load_playlist(pid):
-    global PLAY_THREAD, SPOT
-    json = sa.get_playlist_tracks(SPOT, pid)
+    global PLAY_THREAD, SPOT, PLAYLIST
+    PLAYLIST = pid
+    json = sa.get_playlist_tracks(SPOT, PLAYLIST)
     rand_id = choices(range(json['total']), k=11)
     for idx in rand_id:
         sid = json['items'][idx]['track']['id']
@@ -133,11 +135,29 @@ def load_playlist(pid):
         PLAY_THREAD.start()
     return redirect('/')
 
+def random_selection():
+    global SPOT, PLAYLIST, QUEUE
+    json = sa.get_playlist_tracks(SPOT, PLAYLIST)
+    rand_id = choices(range(json['total']), k=11)
+    for idx in rand_id:
+        sid = json['items'][idx]['track']['id']
+        track = sa.get_track(SPOT, sid)
+        QUEUE.add('Auto', track)
+
 def play_next():
-    global SPOT
+    global SPOT, PLAY_THREAD
     QUEUE.pop(0)
+    while skip_criterion(QUEUE[0]):
+        QUEUE.pop(0)
+        if len(QUEUE) == 0:
+            break
+    
+    if len(QUEUE) == 0:
+        random_selection()
+        
     sa.play(SPOT, uris=[QUEUE[0].uri])
     time_sec = QUEUE[0].duration/1000
+    PLAY_THREAD.cancel()
     PLAY_THREAD = Timer(time_sec, play_next)
     PLAY_THREAD.start()
 
@@ -173,11 +193,7 @@ def search():
             if request.form.get(key, '') == 'on':
                 qtype.append(key)
         
-        try:
-            results = sa.search(SPOT, string, qtype)
-        except KeyError:
-            return redirect('/obtain_token')
-        
+        results = sa.search(SPOT, string, qtype)
         qtype = [item+'s' for item in qtype]
         resp = render_template( 'search_results.html',
                                 user=session['user'],
@@ -186,6 +202,22 @@ def search():
     else:
         resp = render_template('search.html', user=session['user'])
     return resp
+
+@jukebox.route('/more', methods=['GET', 'POST'])
+def more_results():
+    global SPOT
+    if request.method == 'POST':
+        qtype = [request.form['qtype']]
+        url = request.form['url']
+        results = SPOT.get(url).json()
+        resp = render_template( 'search_results.html',
+                                    user=session['user'],
+                                    qtype=qtype,
+                                    results=results)
+    else:
+        resp = 'This string'
+    return resp
+    
 
 @jukebox.route('/search/<qtype>/<iid>')
 def search_more(qtype, iid):
@@ -215,13 +247,13 @@ def tplay(sid):
 def action(x, dest='index'):
     global SPOT, PLAY_THREAD
     
-    if x in ['pause', 'skip', 'previous']:
+    # ~ call = getattr(sa, x)
+    # ~ call(SPOT)
+    
+    if x == 'pause':
         PLAY_THREAD.cancel()
-    
-    call = getattr(sa, x)
-    call(SPOT)
-    
-    if x == 'play':
+        sa.pause(SPOT)
+    elif x == 'play':
         sa.play(SPOT)
         current = sa.get_current(SPOT)['progress_ms']
         time_sec = (QUEUE[0].duration - current)/1000
@@ -230,9 +262,11 @@ def action(x, dest='index'):
     elif x == 'previous':
         sa.play(SPOT, uris=[QUEUE[0].uri])
         time_sec = QUEUE[0].duration/1000
+        PLAY_THREAD.cancel()
         PLAY_THREAD = Timer(time_sec, play_next)
         PLAY_THREAD.start()
     elif x == 'skip':
+        # Play next already cancels timer
         play_next()
     
     return redirect(url_for(dest))
@@ -255,10 +289,20 @@ def vote(user, idx, updown):
     elif updown == '-':
         QUEUE[idx].downvote(user)
         QUEUE.sort()
+        if idx == 0 and skip_criterion(QUEUE[0]):
+            play_next()
     else:
         pass
     # print(user, ':', idx, ':', updown)
     return redirect('/')
+
+def skip_criterion(entry):
+    ''' Proportion of votes needed for current song to be skipped
+    '''
+    u = max(1, entry.ups)
+    d = entry.downs
+    factor = 1.5
+    return d >= factor*u
 
 # Run party jukebox
 if __name__ == '__main__':
