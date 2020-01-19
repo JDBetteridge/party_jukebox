@@ -187,7 +187,6 @@ def search_more(qtype, iid):
     spot = OAuth2Session(CID, token=AUTH)
     if qtype == 'artists':
         results = sa.get_artist_top_tracks(spot, aid=iid)
-        #return results
     elif qtype == 'albums':
         results = sa.get_album_tracks(spot, aid=iid)
     elif qtype == 'playlists':
