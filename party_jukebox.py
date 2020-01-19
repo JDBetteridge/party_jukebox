@@ -17,7 +17,7 @@ jukebox = Flask(__name__)
 # Jacks_Party_Jukebox client ID and secret
 CID = 'e140630233fe4f4098be987729b8693d'
 CSEC = 'f261fdb4760e4134b9b5228e625ad989'
-AUTH = None
+SPOT = None
 secret_user = str(sample(range(1000,10000), 1)[0])
 # Setup auth
 client = sa.spotify_auth.Client(CID, CSEC)
@@ -38,16 +38,16 @@ def index():
     '''
     Index of jukebox, shows current playing song and queue
     '''
-    if AUTH is None:
+    global SPOT
+    if SPOT is None:
         resp = redirect('/setup')
     else:
         # If cookie exists, it gets returned
         try:
             user = request.cookies['user']
             session['user'] = user
-            spot = OAuth2Session(CID, token=AUTH)
             try:
-                current = sa.get_current(spot)
+                current = sa.get_current(SPOT)
                 queue = QUEUE
                 resp = render_template('playlist.html',
                                         user=user,
@@ -76,7 +76,7 @@ def login(admin):
     '''
     Login assigns everyone a username
     '''
-    global AUTH
+    global SPOT
     if request.method == 'POST':
         username = request.form['user']
         if admin:
@@ -87,7 +87,14 @@ def login(admin):
         resp.set_cookie('user', username)
     else:
         if admin:
-            AUTH = session['oauth_token']
+            extra = {   'client_id' : client.id,
+                        'client_secret' : client.secret}
+            saver = lambda tok : session.update({'oauth_token' : tok})
+            SPOT = OAuth2Session(   client.id,
+                                    token=session['oauth_token'],
+                                    auto_refresh_url=sa.spotify_auth.spotify_token,
+                                    auto_refresh_kwargs=extra,
+                                    token_updater=saver)
             mesg = 'You are the session admin, use code '
             mesg += secret_user
             mesg += ' to log in to admin account'
@@ -98,47 +105,46 @@ def login(admin):
 
 @jukebox.route('/select_playlist', methods=['GET', 'POST'])
 def select_playlist():
-    spot = OAuth2Session(CID, token=AUTH)
+    global SPOT
     if request.method == 'POST':
         string = request.form['string']
-        sa.create_playlist(spot, name=string)
+        sa.create_playlist(SPOT, name=string)
         resp = redirect('/search')
     else:
-        json = sa.get_users_playlists(spot)
+        json = sa.get_users_playlists(SPOT)
         resp = render_template('select_playlist.html', playlists=json)
     
     return resp
 
 @jukebox.route('/load_playlist/<pid>')
 def load_playlist(pid):
-    global PLAY_THREAD
-    spot = OAuth2Session(CID, token=AUTH)
-    json = sa.get_playlist_tracks(spot, pid)
+    global PLAY_THREAD, SPOT
+    json = sa.get_playlist_tracks(SPOT, pid)
     rand_id = choices(range(json['total']), k=11)
     for idx in rand_id:
         sid = json['items'][idx]['track']['id']
-        track = sa.get_track(spot, sid)
+        track = sa.get_track(SPOT, sid)
         QUEUE.add('Auto', track)
     
     if PLAY_THREAD is None:
-        sa.play(spot, uris=[QUEUE[0].uri])
+        sa.play(SPOT, uris=[QUEUE[0].uri])
         time_sec = QUEUE[0].duration/1000
         PLAY_THREAD = Timer(time_sec, play_next)
         PLAY_THREAD.start()
     return redirect('/')
 
 def play_next():
-    spot = OAuth2Session(CID, token=AUTH)
+    global SPOT
     QUEUE.pop(0)
-    sa.play(spot, uris=[QUEUE[0].uri])
+    sa.play(SPOT, uris=[QUEUE[0].uri])
     time_sec = QUEUE[0].duration/1000
     PLAY_THREAD = Timer(time_sec, play_next)
     PLAY_THREAD.start()
 
 @jukebox.route('/'+secret_user)
 def admin_user():
-    spot = OAuth2Session(CID, token=AUTH)
-    current = sa.get_current(spot)
+    global SPOT
+    current = sa.get_current(SPOT)
     return render_template('controls.html',
                             user=session['user'],
                             queue=QUEUE,
@@ -146,22 +152,21 @@ def admin_user():
 
 @jukebox.route('/info')
 def info():
-    spot = OAuth2Session(CID, token=AUTH)
-    return sa.get_users_playlists(spot)
+    global SPOT
+    return sa.get_users_playlists(SPOT)
 
 @jukebox.route('/playlist/<pid>')
 def playlist(pid):
-    spot = OAuth2Session(CID, token=AUTH)
-    return sa.get_playlist_tracks(spot, pid)
+    global SPOT
+    return sa.get_playlist_tracks(SPOT, pid)
 
 @jukebox.route('/search', methods=['GET', 'POST'])
 def search():
     '''
     Finding new songs
     '''
-    global AUTH, CID
+    global SPOT
     if request.method == 'POST':
-        spot = OAuth2Session(CID, token=AUTH)
         string = request.form['string']
         qtype = []
         for key in ['track', 'artist', 'album', 'playlist']:
@@ -169,7 +174,7 @@ def search():
                 qtype.append(key)
         
         try:
-            results = sa.search(spot, string, qtype)
+            results = sa.search(SPOT, string, qtype)
         except KeyError:
             return redirect('/obtain_token')
         
@@ -184,13 +189,13 @@ def search():
 
 @jukebox.route('/search/<qtype>/<iid>')
 def search_more(qtype, iid):
-    spot = OAuth2Session(CID, token=AUTH)
+    global SPOT
     if qtype == 'artists':
-        results = sa.get_artist_top_tracks(spot, aid=iid)
+        results = sa.get_artist_top_tracks(SPOT, aid=iid)
     elif qtype == 'albums':
-        results = sa.get_album_tracks(spot, aid=iid)
+        results = sa.get_album_tracks(SPOT, aid=iid)
     elif qtype == 'playlists':
-        results = sa.get_playlist_tracks(spot, pid=iid)
+        results = sa.get_playlist_tracks(SPOT, pid=iid)
     resp = render_template( 'search_results_more.html',
                                 user=session['user'],
                                 qtype=[qtype],
@@ -200,34 +205,30 @@ def search_more(qtype, iid):
 @jukebox.route('/test_play/<uri>')
 def tplay(sid):
     # http://127.0.0.1:6500/test_play/spotify:track:5vJtCjdjiyF6uRKZvbWfHv
-    spot = OAuth2Session(CID, token=AUTH)
-    th = Timer(10.0, sa.play, args=(spot, ), kwargs={'uris':[uri]})
+    global SPOT
+    th = Timer(10.0, sa.play, args=(SPOT, ), kwargs={'uris':[uri]})
     th.start()
     return redirect('/')
 
 @jukebox.route('/action/<x>', defaults={'dest' : 'index'})
 @jukebox.route('/action/<x>/<dest>')
 def action(x, dest='index'):
-    global AUTH, CID, PLAY_THREAD
-    try:
-        spot = OAuth2Session(CID, token=AUTH)
-    except KeyError:
-        return redirect('/obtain_token')
+    global SPOT, PLAY_THREAD
     
     if x in ['pause', 'skip', 'previous']:
         PLAY_THREAD.cancel()
     
     call = getattr(sa, x)
-    call(spot)
+    call(SPOT)
     
     if x == 'play':
-        sa.play(spot)
-        current = sa.get_current(spot)['progress_ms']
+        sa.play(SPOT)
+        current = sa.get_current(SPOT)['progress_ms']
         time_sec = (QUEUE[0].duration - current)/1000
         PLAY_THREAD = Timer(time_sec, play_next)
         PLAY_THREAD.start()
     elif x == 'previous':
-        sa.play(spot, uris=[QUEUE[0].uri])
+        sa.play(SPOT, uris=[QUEUE[0].uri])
         time_sec = QUEUE[0].duration/1000
         PLAY_THREAD = Timer(time_sec, play_next)
         PLAY_THREAD.start()
@@ -238,13 +239,9 @@ def action(x, dest='index'):
     
 @jukebox.route('/queue/<user>/<sid>')
 def queue(user, sid):
-    global AUTH, CID, QUEUE
-    try:
-        spot = OAuth2Session(CID, token=AUTH)
-    except KeyError:
-        return redirect('/obtain_token')
+    global SPOT, QUEUE
     print(user, ':', sid)
-    json = sa.get_track(spot, sid)
+    json = sa.get_track(SPOT, sid)
     QUEUE.add(user, json)
     QUEUE.sort()
     return redirect('/')
