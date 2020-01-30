@@ -128,19 +128,19 @@
             </div>
         </li>
         {% endif %}
-        {% if results[t]['next'] is not none %}
+        {% endfor %}
+        {% if results['next'] is not none %}
         <li style="height:90px" class="w3-row">
             <div class="w3-col s2 m2 l2"><br/></div>
             <div class="w3-col s8 m9 l9">
                 <form action="/more" method="post">
                     <input type="hidden" name="qtype" value={{ t }} />
-                    <input type="hidden" name="url" value={{ results[t]['next'] }} />
-                    <button class="w3-bar-item w3-button w3-blue w3-border w3-round" type="submit">more {{ t }}...</button>
+                    <input type="hidden" name="url" value={{ results['next'] }} />
+                    <button class="w3-bar-item w3-button w3-blue w3-border w3-round" type="submit">more tracks...</button>
                 </form>
             </div>
         </li>
         {% endif %}
-        {% endfor %}
         {% endif %}
         {% endfor %}
     </ul>
