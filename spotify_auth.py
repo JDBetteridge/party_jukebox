@@ -22,14 +22,14 @@ class Client(object):
         self.secret = client_secret
 
 def auth(webapp, client, scope=['user-read-private']):
-    
+
     @webapp.route('/obtain_token')
     def stage_1():
         spot = OAuth2Session(   client.id,
                                 redirect_uri='http://127.0.0.1:6500/callback',
                                 scope=scope)
         authorization_url, state = spot.authorization_url(spotify_auth)
-
+        print('STATE:', state)
         # State is used to prevent CSRF, keep this for later.
         session['oauth_state'] = state
         return redirect(authorization_url)
@@ -39,9 +39,14 @@ def auth(webapp, client, scope=['user-read-private']):
         print('Authenticated')
         code = request.args['code']
         print('Exchange code is:', code)
+        try:
+            state = session['oauth_state']
+        except KeyError:
+            state = None
+
         spot = OAuth2Session(   client.id,
                                 redirect_uri='http://127.0.0.1:6500/callback',
-                                state=session['oauth_state'])
+                                state=state)
         print('provided URL is:', request.url)
         token = spot.fetch_token(spotify_token,
                                     client_secret=client.secret,
@@ -49,9 +54,9 @@ def auth(webapp, client, scope=['user-read-private']):
         print('Got token:', token)
         session['client_id'] = client.id
         session['oauth_token'] = token
-        
+
         return redirect('/login/1')
-        
+
     @webapp.route('/update_token')
     def update_token():
         extra = {'client_id' : client.id, 'client_secret' : client.secret}
@@ -63,7 +68,7 @@ def auth(webapp, client, scope=['user-read-private']):
                                 token_updater=saver)
         spot.refresh_token(spotify_token)
         return redirect('/')
-    
+
     @webapp.route('/something')
     def something():
         try:
@@ -76,7 +81,7 @@ def auth(webapp, client, scope=['user-read-private']):
         import pprint
         nice = pprint.pformat(str(ret.json()))
         return ret.json()
-        
+
     return (stage_1, callback, something)
 
 
