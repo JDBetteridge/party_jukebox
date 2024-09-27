@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="../static/css/w3.css"> 
+    <link rel="stylesheet" href="../static/css/w3.css">
     <link rel="stylesheet" href="../static/css/font-awesome.min.css">
     <title>Select playlist</title>
 </head>
@@ -33,7 +33,7 @@
         <li style="height:90px" class="w3-row" onclick="location.href='/';">
             <div class="w3-col s2 m2 l2">
                 <img src="
-                    {% if item['images']|length > 0 %}
+                    {% if item['images'] is not none and item['images']|length > 0 %}
                     {{ item['images'][-1]['url'] }}
                     {% else %}
                     ../static/images/album.png
@@ -61,4 +61,4 @@
     <div class="w3-bar-item">Logged in as {{ user }}</div>
 </div>
 </body>
-</html> 
+</html>
